@@ -1,0 +1,233 @@
+{
+  "name": "chatbotautoreply",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        -48
+      ],
+      "id": "dcbca705-61c9-495c-b8b0-d2f4be759517",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cf211838-2ed7-4712-9634-9a480b43f061",
+              "leftValue": "={{ $json.content }} ",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "3cf556ee-acb1-451f-bfa6-29e631dd503c",
+              "leftValue": "={{ $json.author.username }}",
+              "rightValue": "playbot",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        -48
+      ],
+      "id": "96e1b4d6-3001-4478-8b93-c3e99c369cc3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a helpful Discord bot. Reply naturally in English and Roman Urdu. Never include any code, JSON paths, or technical text like '$json' in your responses. Keep responses short and friendly."
+            },
+            {
+              "content": "={{ $json.content }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        -48
+      ],
+      "id": "8da8f587-83bf-4d55-a34f-2fe4b7837293",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "nYDEoDxQtzYQ23zx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1465997090302722187",
+          "mode": "list",
+          "cachedResultName": "test server"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1465997091552890947",
+          "mode": "id"
+        },
+        "content": "={{ $json.output[0].content[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -48
+      ],
+      "id": "cb5c58e9-4b13-43bd-acc9-9fb0cd96adcd",
+      "name": "Send a message",
+      "webhookId": "44746ee6-dc3f-4e5b-b8ad-2451bc76b572",
+      "credentials": {
+        "discordBotApi": {
+          "id": "v50FqK4yjjfGgckW",
+          "name": "Discord Bot account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "guildId": {
+          "__rl": true,
+          "value": "1465997090302722187",
+          "mode": "list",
+          "cachedResultName": "test server"
+        },
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1465997091552890947"
+        },
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -48
+      ],
+      "id": "2feee8b1-700d-4497-bd1e-630ca0360370",
+      "name": "Get many messages",
+      "webhookId": "ff9864d6-a2d9-455f-8ca3-fbe4f98b4312",
+      "credentials": {
+        "discordBotApi": {
+          "id": "v50FqK4yjjfGgckW",
+          "name": "Discord Bot account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "5d76a5ac-e327-4f22-8259-cb66a8b3531b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c16103d62ceda0c133bb59d828407acab78693d543128c4329bc099bc1f76726"
+  },
+  "id": "K29u3QBjPLOg7YGpmuZp-",
+  "tags": []
+}
